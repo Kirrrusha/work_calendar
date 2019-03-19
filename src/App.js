@@ -4,6 +4,7 @@ import BigCalendar from 'react-big-calendar';
 import BigCalendarCSS from 'react-big-calendar/lib/css/react-big-calendar.css';
 import moment from 'moment';
 import Select from 'react-select';
+import { connectableObservableDescriptor } from 'rxjs/internal/observable/ConnectableObservable';
 
 
 class App extends Component {
@@ -15,22 +16,22 @@ class App extends Component {
       {
         label: 'В день',
         value: 'Day',
-        color: ''
+        hexColor: '#184af0'
       },
       {
         label: 'В ночь',
         value: 'Night',
-        color: ''
+        hexColor: '#ffea00'
       },
       {
         label: 'После ночи',
         value: 'After night',
-        color: ''
+        hexColor: '#c22994'
       },
       {
         label: 'Отдых',
         value: 'relax',
-        color: ''
+        hexColor: '#ff0303'
       }
     ],
     period: [
@@ -65,12 +66,10 @@ class App extends Component {
   localizer = BigCalendar.momentLocalizer(moment);
 
   handleSelectWorkDay = (selectedOption) => {
-    console.log(selectedOption)
     this.setState({ selectedOption }, () => this.changeValues());
   }
 
   handleSelectPeriod = (periodOption) => {
-    console.log(periodOption)
     this.setState({ periodOption }, () => this.changeValues());
   }
 
@@ -78,17 +77,47 @@ class App extends Component {
     const {workDay, periodOption, period, selectedOption} = this.state;
     if (periodOption && selectedOption) {
       let values = [];
-      console.log('index', workDay.findIndex(w => w.value === selectedOption.value));
-      const selectedValues = workDay.map(e => e)
-        .splice(workDay.findIndex(w => w.value === selectedOption.value), workDay.length);
+      const indexWorkDay = workDay.findIndex(w => w.value === selectedOption.value);
+      let selectedValues = workDay.filter((e, index) => {
+        if (index >= indexWorkDay) {
+          return e;
+        }
+      });
+      selectedValues = selectedValues.map((e, index) => {
+        return {
+          title: e.label,
+          start: moment().add(index, 'days').format('MMMM DD YYYY'),
+          end: moment().add(index, 'days').format('MMMM DD YYYY'),
+          hexColor: e.hexColor
+        }
+      })
       values = values.concat(selectedValues);
-      for (let i = 0; i < periodOption['value'] * 30; i++) {
-        values.push(workDay[i % 4]);
+      for (let i = selectedValues.length; i < periodOption['value'] * 30; i++) {
+        values.push({
+          title: workDay[i % 4].label,
+          start: moment().add(i, 'days').format('MMMM DD YYYY'),
+          end: moment().add(i, 'days').format('MMMM DD YYYY'),
+          hexColor: workDay[i % 4].hexColor
+        });
       }
-      console.log(values);
       this.setState({ values });
     }
   }
+
+  eventStyleGetter =  (event, start, end, isSelected) => {
+  var backgroundColor = event.hexColor;
+  var style = {
+    backgroundColor: backgroundColor,
+    borderRadius: '0px',
+    opacity: 0.8,
+    color: 'black',
+    border: '0px',
+    display: 'block'
+  };
+  return {
+    style: style
+  };
+}
 
   render() {
     const { selectedOption, workDay, periodOption, period, values } = this.state;
@@ -109,11 +138,11 @@ class App extends Component {
 
         <BigCalendar
           localizer={this.localizer}
-          events={[]}
+          events={values}
           step={60}
           startAccessor="start"
           endAccessor="end"
-          views={values}
+          eventPropGetter={(this.eventStyleGetter)}
           showMultiDayTimes
         />
       </div>
