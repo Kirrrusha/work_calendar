@@ -1,10 +1,9 @@
 import React, {Component} from 'react';
-import './App.scss';
 import BigCalendar from 'react-big-calendar';
 import BigCalendarCSS from 'react-big-calendar/lib/css/react-big-calendar.css';
+import './App.scss';
 import moment from 'moment';
 import Select from 'react-select';
-import { connectableObservableDescriptor } from 'rxjs/internal/observable/ConnectableObservable';
 
 
 class App extends Component {
@@ -59,6 +58,30 @@ class App extends Component {
         label: 'Пол-года',
         value: 6
       },
+      {
+        label: '7 месяцев',
+        value: 7
+      },
+      {
+        label: '8 месяцев',
+        value: 8
+      },
+      {
+        label: '9 месяцев',
+        value: 9
+      },
+      {
+        label: '10 месяцев',
+        value: 10
+      },
+      {
+        label: '11 месяцев',
+        value: 11
+      },
+      {
+        label: 'год',
+        value: 12
+      }
     ],
     values: []
   };
@@ -74,7 +97,7 @@ class App extends Component {
   }
 
   changeValues() {
-    const {workDay, periodOption, period, selectedOption} = this.state;
+    const {workDay, periodOption, selectedOption} = this.state;
     if (periodOption && selectedOption) {
       let values = [];
       const indexWorkDay = workDay.findIndex(w => w.value === selectedOption.value);
